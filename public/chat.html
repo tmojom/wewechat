@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>微信聊天</title>
+    <link rel="icon" type="image/x-icon" href="/images/images-login/wechat.png">
+    <link rel="stylesheet" href="styles/chat.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 左侧功能区 -->
+        <div class="sidebar-left">
+            <div class="user-profile">
+                <img src="/images/23.jpg" alt="" class="avatar" id="user-avatar">
+                <span id="current-user">当前用户</span>
+            </div>
+            <div class="nav-buttons">
+                <div class="contact-btn">
+                    <button class="icon-btn" onclick="switchView('contacts')">
+                        <img src="./images/icon/contact.png" alt="" class="icon-contacts">
+                    </button>
+                </div>
+                <div class="settings-btn">
+                    <button class="icon-btn" onclick="showSettings()">
+                        <img src="./images/icon/set.png" alt="" class="icon-settings">
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 中间内容区 -->
+        <div class="content">
+            <div class="search-bar">
+                <input type="text" placeholder="搜索" id="search-input">
+            </div>
+
+            <!-- 联系人列表视图 -->
+            <div class="view-content" id="contacts-view">
+                <div class="contact-panel">
+                    <div class="contact-header">
+                        <h3>社交管理</h3>
+                    </div>
+                    <div class="contact-menu">
+                        <div class="menu-item" onclick="showAddContactDialog()">
+                            <img src="./images/icon/add.png" alt="" class="menu-icon">
+                            <span>新的朋友</span>
+                        </div>
+                        <div class="menu-item">
+                            <img src="./images/icon/group.png" alt="" class="menu-icon">
+                            <span>群聊</span>
+                        </div>
+                    </div>
+                    <div class="contact-divider"></div>
+                    <div class="contact-section">
+                        <div class="section-header">我的联系人</div>
+                        <div class="contacts-container" id="contact-list">
+                            <!-- 联系人列表将通过 JavaScript 动态添加 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧聊天区域 -->
+        <div class="chat-area">
+            <div class="chat-header">
+                <span id="chat-title">聊天</span>
+                <div class="chat-manage">
+                    <button class="manage-btn" onclick="toggleManageMenu()">
+                        <img src="./images/icon/manage.png" alt="" class="icon-manage">
+                    </button>
+                    <!-- 下拉菜单 -->
+                    <div class="manage-menu" id="manage-menu">
+                        <div class="menu-item" onclick="showDeleteMessageDialog()">
+                            <img src="./images/icon/delete.png" alt="删除" class="menu-icon">
+                            <span>删除聊天记录</span>
+                        </div>
+                        <div class="menu-item" onclick="deleteContact()">
+                            <img src="./images/icon/remove-contact.png" alt="删除联系人" class="menu-icon">
+                            <span>删除联系人</span>
+                        </div>
+                        <div class="menu-item" onclick="toggleBlockContact()" id="block-contact-item">
+                            <img src="./images/icon/block.png" alt="屏蔽" class="menu-icon">
+                            <span>屏蔽联系人</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="messages" id="messages">
+                <!-- 消息将通过 JavaScript 动态添加 -->
+            </div>
+            <div class="input-area">
+                <input type="text" id="message-input" placeholder="输入消息...">
+                <button onclick="sendMessage()">发送</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加联系人对话框 -->
+    <div id="add-contact-dialog" class="dialog">
+        <div class="dialog-content">
+            <h3>添加联系人</h3>
+            <input type="text" id="contact-username" placeholder="输入用户名">
+            <div class="dialog-buttons">
+                <button onclick="addContact()">添加</button>
+                <button onclick="hideAddContactDialog()">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 设置对话框 -->
+    <div id="settings-dialog" class="dialog">
+        <div class="dialog-content">
+            <h3>设置</h3>
+            <div class="settings-profile">
+                <div class="avatar-setting">
+                    <img src="/images/23.jpg" alt="" id="current-avatar" class="avatar">
+                    <input type="file" id="avatar-upload" accept="image/*" style="display: none">
+                    <button onclick="document.getElementById('avatar-upload').click()">
+                        更换头像
+                    </button>
+                </div>
+                <div class="profile-setting">
+                    <div class="setting-item">
+                        <label>用户名</label>
+                        <div class="setting-input">
+                            <input type="text" id="username-input" placeholder="输入新用户名">
+                            <button onclick="updateUsername()">修改</button>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <button onclick="openChangePasswordDialog()" class="passwd-btn">修改密码</button>
+                        <button class="logout-btn" onclick="logout()">退出登录</button>
+                    </div>
+                    <div class="setting-item">
+                        
+                    </div>
+                </div>
+            </div>
+            <div class="dialog-buttons">
+                <button onclick="hideSettings()">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 修改密码对话框 -->
+    <div id="change-password-dialog" class="dialog">
+        <div class="dialog-content">
+            <h3>修改密码</h3>
+            <div class="password-input-group">
+                <label for="current-password">当前密码</label>
+                <input type="password" id="current-password" required>
+            </div>
+            <div class="password-input-group">
+                <label for="new-password">新密码</label>
+                <input type="password" id="new-password" required>
+            </div>
+            <div class="password-input-group">
+                <label for="confirm-password">确认新密码</label>
+                <input type="password" id="confirm-password" required>
+            </div>
+            <div class="dialog-buttons">
+                <button onclick="changePassword()">确认</button>
+                <button onclick="closeChangePasswordDialog()">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加删除消息对话框 -->
+    <div id="delete-message-dialog" class="dialog">
+        <div class="dialog-content">
+            <h3>删除聊天记录</h3>
+            <div class="delete-options">
+                <label class="delete-option">
+                    <input type="radio" name="delete-type" value="selected" checked>
+                    <span>选择性删除</span>
+                </label>
+                <label class="delete-option">
+                    <input type="radio" name="delete-type" value="all">
+                    <span>删除全部</span>
+                </label>
+            </div>
+            <div class="dialog-buttons">
+                <button onclick="deleteMessages()">确认</button>
+                <button onclick="hideDeleteMessageDialog()">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io('http://localhost:3001');
+        let currentUser = sessionStorage.getItem('username');
+        const DEFAULT_AVATAR = '/images/23.jpg';
+        let avatarUrl = sessionStorage.getItem('avatarUrl') || DEFAULT_AVATAR;
+        console.log('当前用户:', currentUser);
+        let currentReceiver = null;
+        let currentReceiverAvatar = null;
+
+        // 检查用户是否已登录
+        if (!currentUser) {
+            window.location.href = '/';  // 如果未登录，重定向到登录页面
+            throw new Error('未登录');
+        }
+
+        // 设置用户头像
+        function updateUserAvatars() {
+            const imageUrl = avatarUrl || DEFAULT_AVATAR;
+            const userAvatar = document.getElementById('user-avatar');
+            const currentAvatar = document.getElementById('current-avatar');
+            
+            if (userAvatar) userAvatar.src = imageUrl;
+            if (currentAvatar) currentAvatar.src = imageUrl;
+        }
+
+        // 初始化设置头像
+        updateUserAvatars();
+
+        // 设置当前用户名显示
+        document.getElementById('current-user').textContent = currentUser;
+
+        // 页面刷新或关闭前的处理
+        window.addEventListener('beforeunload', () => {
+            // 保持会话存储中的用户信息
+            socket.disconnect();
+        });
+
+        // 连接成功后发送用户信息
+        socket.on('connect', () => {
+            console.log('WebSocket连接成功');
+            if (!currentUser) {
+                console.error('未找到用户名');
+                return;
+            }
+            socket.emit('user_connected', currentUser);
+        });
+
+        // 更新在线用户列
+        socket.on('users_list', (users) => {
+            console.log('收到在线用户列表:', users);
+            if (!Array.isArray(users)) {
+                console.error('收到的用户列表不是数组:', users);
+                return;
+            }
+            
+            // 更新在线状态
+            const contactItems = document.querySelectorAll('.contact-item');
+            contactItems.forEach(item => {
+                const username = item.querySelector('div').textContent;
+                if (users.includes(username)) {
+                    item.classList.add('online');
+                } else {
+                    item.classList.remove('online');
+                }
+            });
+        });
+
+        // 接收新消息
+        socket.on('new_message', (data) => {
+            console.log('收到新消息:', data);
+            if (data.sender === currentReceiver) {
+                appendMessage(data.message, false, data.timestamp);
+            }
+        });
+
+        // 选择联系人
+        function selectContact(username, avatarUrl) {
+            currentReceiver = username;
+            currentReceiverAvatar = avatarUrl;
+            document.getElementById('chat-title').textContent = username;
+            document.getElementById('messages').innerHTML = '';
+            
+            // 加载历史消息
+            loadChatHistory(username);
+            
+            document.querySelectorAll('.contact-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+        }
+
+        // 发送消息
+        function sendMessage() {
+            const input = document.getElementById('message-input');
+            const content = input.value.trim();
+            
+            if (content && currentReceiver) {
+                console.log('发送消息:', {
+                    sender: currentUser,
+                    receiver: currentReceiver,
+                    message: content
+                });
+                
+                socket.emit('private_message', {
+                    sender: currentUser,
+                    receiver: currentReceiver,
+                    message: content
+                });
+                
+                appendMessage(content, true);
+                input.value = '';
+            }
+        }
+
+        // 添加消息到聊天界面
+        function appendMessage(content, isSent, timestamp = new Date()) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
+            messageDiv.innerHTML = `
+                <div class="message-wrapper">
+                    <img src="${isSent ? avatarUrl : (currentReceiverAvatar || DEFAULT_AVATAR)}" 
+                         alt="" class="message-avatar">
+                    <div class="message-content-wrapper">
+                        <div class="message-bubble">
+                            <div class="message-content">${content}</div>
+                        </div>
+                        <div class="message-time">${formatTime(new Date())}</div>
+                    </div>
+                </div>
+            `;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        // 格式化时间
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            return `${hours}:${minutes}`;
+        }
+
+        // 加载聊天历史
+        async function loadChatHistory(otherUser) {
+            try {
+                const response = await fetch(`http://localhost:3001/messages/${currentUser}/${otherUser}`);
+                const messages = await response.json();
+                
+                const messagesDiv = document.getElementById('messages');
+                messagesDiv.innerHTML = '';
+                
+                messages.forEach(msg => {
+                    appendMessage(msg.content, msg.sender_username === currentUser, msg.created_at);
+                });
+            } catch (error) {
+                console.error('加载天历史失败:', error);
+            }
+        }
+
+        // 监听回车键发送消息
+        document.getElementById('message-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // 添加联系人相关函数
+        function showAddContactDialog() {
+            document.getElementById('add-contact-dialog').style.display = 'flex';
+        }
+
+        function hideAddContactDialog() {
+            document.getElementById('add-contact-dialog').style.display = 'none';
+        }
+
+        async function addContact() {
+            const contactUsername = document.getElementById('contact-username').value.trim();
+            const currentUser = sessionStorage.getItem('username');
+
+            // 输入验证
+            if (!contactUsername) {
+                alert('请输入用户名');
+                return;
+            }
+
+            // 检查是否添加自己
+            if (contactUsername === currentUser) {
+                alert('不能添加自己为联系人');
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:3001/contacts/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: currentUser,
+                        contactUsername: contactUsername
+                    })
+                });
+
+                const data = await response.json();
+                console.log('添加联系人响应:', data);
+
+                if (data.success) {
+                    alert(data.message);
+                    hideAddContactDialog();
+                    document.getElementById('contact-username').value = ''; // 清空输入框
+                    loadContacts();  // 重新加载联系人列表
+                } else {
+                    alert(data.message || '添加联系人失败');
+                }
+            } catch (error) {
+                console.error('添加联系人失败:', error);
+                alert('添加联系人失败，请重试');
+            }
+        }
+
+        // 加载联系人列表
+        async function loadContacts() {
+            try {
+                const response = await fetch(`http://localhost:3001/contacts/${currentUser}`);
+                console.log('加载联系人响应状态:', response.status);
+                const contacts = await response.json();
+                console.log('获取的联系人列表:', contacts);
+                
+                const contactList = document.getElementById('contact-list');
+                if (!contactList) {
+                    console.error('找不到联系人列表容器元素');
+                    return;
+                }
+                
+                if (!Array.isArray(contacts)) {
+                    console.error('contacts 不是数组:', contacts);
+                    contactList.innerHTML = '<div class="no-contacts">暂无联系人</div>';
+                    return;
+                }
+                
+                if (contacts.length === 0) {
+                    contactList.innerHTML = '<div class="no-contacts">无联系人</div>';
+                    return;
+                }
+                
+                contactList.innerHTML = contacts.map(contact => `
+                    <div class="contact-wrapper">
+                        <div class="contact-item ${contact.is_blocked ? 'blocked' : ''}" 
+                             onclick="selectContact('${contact.username}', '${contact.avatar_url || DEFAULT_AVATAR}')"
+                             data-username="${contact.username}"
+                             data-blocked="${contact.is_blocked}">
+                            <img src="${contact.avatar_url || DEFAULT_AVATAR}" alt="" class="avatar">
+                            <div class="contact-info">
+                                <div class="contact-name">${contact.username}</div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                console.log('联系人列表已更新');
+            } catch (error) {
+                console.error('加载联系人列表失败:', error);
+                const contactList = document.getElementById('contact-list');
+                if (contactList) {
+                    contactList.innerHTML = '<div class="error-message">加载联系人失败</div>';
+                }
+            }
+        }
+
+        // 确保在用户登录后才加载联系人
+        if (currentUser) {
+            loadContacts();
+        } else {
+            console.warn('未找到当前用户信息');
+        }
+
+        // 添加联系人成功后重新加载联系人列表
+        socket.on('contact_added', () => {
+            loadContacts();
+        });
+
+        // 视图切换函数
+        function switchView(view) {
+            const contactsView = document.getElementById('contacts-view');
+            const buttons = document.querySelectorAll('.nav-btn');
+
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            if (view === 'contacts') {
+                contactsView.classList.add('active');
+                contactsView.classList.remove('hidden');
+                buttons[0].classList.add('active');
+            }
+        }
+
+        // 设置对话框
+        function showSettings() {
+            document.getElementById('settings-dialog').style.display = 'flex';
+        }
+
+        function hideSettings() {
+            document.getElementById('settings-dialog').style.display = 'none';
+        }
+
+        // 删除联系人
+        function deleteContact() {
+            const selectedContact = document.querySelector('.contact-item.active');
+            if (!selectedContact) {
+                alert('请先选择一个联系人');
+                return;
+            }
+            
+            const contactName = selectedContact.querySelector('.contact-name').textContent;
+            if (confirm(`确定要删除联系人 ${contactName} 吗？`)) {
+                // TODO: 实现删除联系人的逻辑
+                alert('删除功能待实现');
+            }
+        }
+
+        // 头像上传处理
+        document.getElementById('avatar-upload').addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (!file.type.startsWith('image/')) {
+                alert('请选择图片文件');
+                return;
+            }
+
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            if (file.size > maxSize) {
+                alert('图片大小不能超过5MB');
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('avatar', file);
+                formData.append('username', currentUser);
+
+                const response = await fetch('http://localhost:3001/update-avatar', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    const timestamp = new Date().getTime();
+                    avatarUrl = data.avatarUrl;
+                    const newImageUrl = `${avatarUrl}?t=${timestamp}`;
+                    
+                    // 更新所有头像
+                    document.getElementById('user-avatar').src = newImageUrl;
+                    document.getElementById('current-avatar').src = newImageUrl;
+                    
+                    // 保存到 sessionStorage
+                    sessionStorage.setItem('avatarUrl', avatarUrl);
+                    alert('头像更新成功');
+                } else {
+                    alert(data.message || '头像更新失败');
+                }
+            } catch (error) {
+                console.error('更新头像失败:', error);
+                alert('头像更新失败，请重试');
+            }
+        });
+
+        // 更新用户名
+        async function updateUsername() {
+            const newUsername = document.getElementById('username-input').value.trim();
+            if (!newUsername) {
+                alert('请输入新用户名');
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:3001/update-username', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        oldUsername: currentUser,
+                        newUsername: newUsername
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    currentUser = newUsername;
+                    document.getElementById('current-user').textContent = newUsername;
+                    sessionStorage.setItem('username', newUsername);
+                    alert('用户名修改成功');
+                    document.getElementById('username-input').value = '';
+                } else {
+                    alert(data.message || '用户名修改失败');
+                }
+            } catch (error) {
+                console.error('修改用户名失败:', error);
+                alert('用户名修改失败，请重试');
+            }
+        }
+
+        // 页面加载完成检查头像
+        window.addEventListener('load', () => {
+            // 从 sessionStorage 获取最的头像URL
+            const storedAvatarUrl = sessionStorage.getItem('avatarUrl');
+            if (storedAvatarUrl) {
+                avatarUrl = storedAvatarUrl;
+                updateUserAvatars();
+            }
+        });
+
+        // 登出功能
+        function logout() {
+            if (confirm('确定要退出登录吗？')) {
+                // 清除会话存储
+                sessionStorage.clear();
+                // 断开 socket 连接
+                socket.disconnect();
+                // 重定向到登录页面
+                window.location.href = '/';
+            }
+        }
+
+        // 全局函数声明
+        function openChangePasswordDialog() {
+            document.getElementById('change-password-dialog').style.display = 'flex';
+        }
+
+        function closeChangePasswordDialog() {
+            document.getElementById('change-password-dialog').style.display = 'none';
+            // 清空输入框
+            document.getElementById('current-password').value = '';
+            document.getElementById('new-password').value = '';
+            document.getElementById('confirm-password').value = '';
+        }
+
+        async function changePassword() {
+            const currentPassword = document.getElementById('current-password').value;
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+
+            // 验证输入
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                alert('请填写所有密码字段');
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                alert('新密码与确认密码不匹配');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/change-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: currentUser,  // 使用用户名而不是 userId
+                        currentPassword,
+                        newPassword
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('密码修改成功！');
+                    closeChangePasswordDialog();
+                } else {
+                    alert(data.message || '密码修改失败');
+                }
+            } catch (error) {
+                console.error('修改密码时出错:', error);
+                alert('修改密码失败，请稍后重试');
+            }
+        }
+
+        // 管理菜单相关函数
+        function toggleManageMenu() {
+            const menu = document.getElementById('manage-menu');
+            const currentContact = document.getElementById('chat-title').textContent;
+            
+            if (currentContact === '聊天') {
+                alert('请先选择一个联系人');
+                return;
+            }
+
+            // 获取当前联系人的屏蔽状态
+            const contactItem = document.querySelector(`.contact-item[data-username="${currentContact}"]`);
+            const isBlocked = contactItem && contactItem.classList.contains('blocked');
+            
+            // 更新屏蔽按钮文本
+            const blockMenuItem = document.querySelector('#block-contact-item');
+            if (blockMenuItem) {
+                const blockIcon = blockMenuItem.querySelector('img');
+                const blockText = blockMenuItem.querySelector('span');
+                if (isBlocked) {
+                    blockText.textContent = '取消屏蔽';
+                    blockIcon.src = './images/icon/unblock.png'; 
+                } else {
+                    blockText.textContent = '屏蔽联系人';
+                    blockIcon.src = './images/icon/block.png';
+                }
+            }
+
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // 点击其他地方关闭菜单
+        document.addEventListener('click', (e) => {
+            const menu = document.getElementById('manage-menu');
+            const manageBtn = document.querySelector('.manage-btn');
+            if (!menu.contains(e.target) && !manageBtn.contains(e.target)) {
+                menu.classList.remove('show');
+            }
+        });
+
+        // 删除消息对话框
+        function showDeleteMessageDialog() {
+            document.getElementById('delete-message-dialog').style.display = 'flex';
+            toggleManageMenu();
+        }
+
+        function hideDeleteMessageDialog() {
+            document.getElementById('delete-message-dialog').style.display = 'none';
+        }
+
+        // 删除消息
+        async function deleteMessages() {
+            const deleteType = document.querySelector('input[name="delete-type"]:checked').value;
+            const currentContact = document.getElementById('chat-title').textContent;
+
+            if (currentContact === '聊天') {
+                alert('请先选择一个联系人');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/delete-messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: currentUser,
+                        contactUsername: currentContact,
+                        deleteType: deleteType
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(data.message);
+                    // 重新加载消息
+                    document.getElementById('messages').innerHTML = '';
+                    hideDeleteMessageDialog();
+                } else {
+                    alert(data.message || '删除失败');
+                }
+            } catch (error) {
+                console.error('删除消息失败:', error);
+                alert('删除失败，请重试');
+            }
+        }
+
+        // 删除联系人
+        async function deleteContact() {
+            const currentContact = document.getElementById('chat-title').textContent;
+            
+            if (confirm(`确定要删除联系人 ${currentContact} 吗？`)) {
+                try {
+                    const response = await fetch('/api/delete-contact', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            username: currentUser,
+                            contactUsername: currentContact
+                        })
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        alert('删除成功');
+                        loadContacts();  // 重新加载联系人列表
+                        // 清空聊天区域
+                        document.getElementById('messages').innerHTML = '';
+                        document.getElementById('chat-title').textContent = '聊天';
+                    } else {
+                        alert(data.message || '删除失败');
+                    }
+                } catch (error) {
+                    console.error('删除联系人失败:', error);
+                    alert('删除失败，请重试');
+                }
+            }
+            toggleManageMenu();
+        }
+
+        // 屏蔽联系人
+        async function toggleBlockContact() {
+            const currentContact = document.getElementById('chat-title').textContent;
+            
+            if (currentContact === '聊天') {
+                alert('请先选择一个联系人');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/toggle-block-contact', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: currentUser,
+                        contactUsername: currentContact
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert(data.message);
+                    // 更新UI显示
+                    const contactItem = document.querySelector(`.contact-item[data-username="${currentContact}"]`);
+                    if (contactItem) {
+                        if (data.isBlocked) {
+                            contactItem.classList.add('blocked');
+                        } else {
+                            contactItem.classList.remove('blocked');
+                        }
+                    }
+                    loadContacts();  // 重新加载联系人列表
+                } else {
+                    alert(data.message || '操作失败');
+                }
+            } catch (error) {
+                console.error('屏蔽联系人失败:', error);
+                alert('操作失败，请重试');
+            }
+            toggleManageMenu();
+        }
+    </script>
+</body>
+</html> 
